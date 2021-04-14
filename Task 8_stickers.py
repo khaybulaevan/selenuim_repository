@@ -17,7 +17,6 @@ def test_sticker(driver):
     print("Общее количесво товара:"+str(len(duck_amount)))
     for duck in duck_amount:
         sticker = duck.find_elements_by_xpath(".//div[starts-with(@class,'sticker')]")
-        name = sticker[duck].text
         #print(len(sticker))
         assert len(sticker) == 1
         print("У товара один стикер")
