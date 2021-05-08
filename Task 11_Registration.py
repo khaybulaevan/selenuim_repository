@@ -1,7 +1,9 @@
-import pytest
 from selenium import webdriver
-import time
 from selenium.webdriver.common.keys import Keys
+import pytest
+import string
+import random
+import time
 
 options = webdriver.ChromeOptions()
 options.add_argument("start-maximized")
@@ -12,62 +14,53 @@ def driver(request):
     request.addfinalizer(wd.quit)
     return wd
 
+def find_and_fill (driver,selector_name, value):
+    driver.find_element_by_name(selector_name).click()
+    driver.find_element_by_name(selector_name).clear()
+    driver.find_element_by_name(selector_name).send_keys(value)
+
+domains = ['yandex.ru', 'mail.ru', 'gmail.com', 'hotnail.com', 'yahoo.com']
+letters = string.ascii_lowercase[:12]
+def random_donain(domains):
+    return  random.choice(domains)
+def random_name(letters, lenght):
+    return ''.join(random.choice(letters) for i in range(lenght))
+def random_email (nb,lenght):
+    return [random_name(letters, lenght) + "@" + random_donain(domains) for i in range(nb)]
+def generated_mail():
+    return random_email(1, 7)
 
 def test_registration(driver):
-    driver.get("http://localhost:8080/litecart/en/")
+    mail = generated_mail()
+    driver.get("http://localhost/litecart/en/")
     link_registration = driver.find_element_by_css_selector("table tbody tr:nth-child(5) a").get_attribute('href')
     driver.get(str(link_registration))
-    time.sleep(0.5)
-    tax_id = driver.find_element_by_name('tax_id')
-    tax_id.clear()
-    tax_id.send_keys("12345")
-    first_name = driver.find_element_by_name("firstname").send_keys("Adi")
-    time.sleep(0.5)
-    last_name = driver.find_element_by_name("lastname").send_keys("Darov")
-    time.sleep(0.5)
-    address1 = driver.find_element_by_name("address1").send_keys("Bragg Avenue, 22")
-    time.sleep(0.5)
-    address2 = driver.find_element_by_name("address2").send_keys("Bragg Avenue, 22")
-    time.sleep(0.5)
-    postcode = driver.find_element_by_name("postcode").send_keys("56438")
-    time.sleep(0.5)
-    city = driver.find_element_by_name('city').send_keys("Birmingham")
-    time.sleep(0.5)
-    country = driver.find_element_by_css_selector(".select2-selection__rendered")
-    country.click()
-    serch_country = driver.find_element_by_css_selector("input.select2-search__field")
-    serch_country.send_keys("United States" + Keys.ENTER)
-    time.sleep(0.5)
-    еmail = driver.find_element_by_name("email").send_keys("adidarovbragg@gmail.com")
-    time.sleep(0.5)
-    phone = driver.find_element_by_name('phone')
-    phone.clear()
-    phone.send_keys("+1375759667")
-    time.sleep(0.5)
-    desired_password = driver.find_element_by_name('password')
-    desired_password.clear()
-    desired_password.send_keys('M57163222080')
-    time.sleep(0.5)
-    confirmed_password = driver.find_element_by_name("confirmed_password")
-    confirmed_password.clear()
-    confirmed_password.send_keys("M57163222080")
-    button_create_account = driver.find_element_by_name("create_account").click()
-    driver.implicitly_wait(10)
-    time.sleep(2)
-    # Выход
-    logout = driver.find_element_by_link_text("Logout").click()
-    # Повторный вход
+    find_and_fill(driver, 'tax_id', '12345')
+    find_and_fill(driver, "firstname", "Adi")
+    find_and_fill(driver, "lastname", "Darov")
+    find_and_fill(driver, "address1", "Bragg Avenue, 22")
+    find_and_fill(driver, "address2", "Bragg Avenue, 22")
+    find_and_fill(driver, "postcode", "56438")
+    find_and_fill(driver, 'city', "Birmingham")
+    driver.find_element_by_css_selector(".select2-selection__rendered").click()
+    search_country = driver.find_element_by_css_selector("input.select2-search__field")
+    search_country.send_keys("United States" + Keys.ENTER)
+    find_and_fill(driver, "email", (mail[0]))
+    find_and_fill(driver, 'phone', "+1375759667")
+    find_and_fill(driver, 'password', 'M57163222080')
+    find_and_fill(driver, "confirmed_password", "M57163222080")
+    driver.find_element_by_name("create_account").click()
     time.sleep(1)
     driver.implicitly_wait(10)
-    email_address = driver.find_element_by_name("email")
-    email_address.clear()
-    email_address.send_keys("adidarovbragg@gmail.com")
+    # Выход
+    driver.find_element_by_link_text("Logout").click()
+    # Повторный вход
+    driver.implicitly_wait(10)
+    find_and_fill(driver, "email", (mail[0]))
     time.sleep(0.5)
     driver.implicitly_wait(10)
-    password_page = driver.find_element_by_name("password")
-    password_page.clear()
-    password_page.send_keys("M57163222080")
+    find_and_fill(driver, "password", "M57163222080")
+    driver.find_element_by_name("login").click()
     # Повторный выход
-    time.sleep(2)
-    logout = driver.find_element_by_name("login").click()
+    driver.find_element_by_link_text("Logout").click()
 
